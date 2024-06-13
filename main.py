@@ -5,7 +5,7 @@ from cpm.models import *
 dsm = parse.parse_csv('./test-assets/test-trinity-dsm-5.csv')
 
 cpt = ChangePropagationTree(0, 2, dsm, dsm)
-risk = cpt.propagate(search_depth=5)
+risk = cpt.propagate(search_depth=50)
 
 print(risk)
 

@@ -108,14 +108,24 @@ class ChangePropagationTree:
         self.dsm_likelihood: DSM = dsm_likelihood
         self.start_index: int = start_index
         self.target_index: int = target_index
+        self.start_leaf = None
+
+    def propagate_back(self, end_leaf: ChangePropagationLeaf):
+        current_leaf = end_leaf
+
+        while current_leaf:
+            if current_leaf.parent:
+                current_leaf.parent.next.append(current_leaf)
+
+            current_leaf = current_leaf.parent
 
     def propagate(self, search_depth: int = 4) -> float:
         network = self.dsm_impact.node_network
 
         print(f"Searching for paths from {network[self.start_index].name} to {network[self.target_index].name}")
 
-        start_leaf = ChangePropagationLeaf(network[self.start_index])
-        search_stack = [start_leaf]
+        self.start_leaf = ChangePropagationLeaf(network[self.start_index])
+        search_stack = [self.start_leaf]
         visited_nodes = set()
         end_leafs: list[ChangePropagationLeaf] = []
 
@@ -127,27 +137,38 @@ class ChangePropagationTree:
             if current_leaf.node.index == self.target_index:
                 print("Found target")
                 end_leafs.append(current_leaf)
+
+                # Propagate back and register path
+                self.propagate_back(current_leaf)
+
                 continue
 
             for neighbour in current_leaf.node.neighbours:
-                # At this stage we COULD check if the neighbour is already part of the path to avoid circular references
-                # But it is not obvious that this would save computational expense. We can try it if the algorithm
-                # performs poorly.
+
+                # Trace back and ensure that we do not create circular paths
+                leaf_back_trace = current_leaf
+                already_visited = False
+                while leaf_back_trace.parent:
+                    if neighbour == leaf_back_trace.parent.node.index:
+                        already_visited = True
+                        break
+                    leaf_back_trace = leaf_back_trace.parent
+                if already_visited:
+                    continue
 
                 cpf = ChangePropagationLeaf(network[neighbour], current_leaf)
 
                 if cpf.node.index not in visited_nodes and cpf.level <= search_depth:
                     search_stack.append(cpf)
 
-        print(f"Found {len(end_leafs)} solutions")
+        print(f"Found {len(self.start_leaf.next)} solutions")
+        print(self.start_leaf.next)
 
         paths = self.construct_paths(end_leafs)
 
         return self.calculate_risk(paths)
 
-
     def construct_paths(self, end_leafs: list[ChangePropagationLeaf]) -> list[ChangePropagationPath]:
-
         risk_array = []
         paths_array = []
 
