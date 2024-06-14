@@ -94,8 +94,6 @@ class ChangePropagationLeaf:
 
             prob = prob * (1 - to_this * to_next)
 
-        print(self.node.name)
-
         return 1 - prob
 
 
@@ -108,7 +106,7 @@ class ChangePropagationTree:
         self.dsm_likelihood: DSM = dsm_likelihood
         self.start_index: int = start_index
         self.target_index: int = target_index
-        self.start_leaf: ChangePropagationLeaf = None
+        self.start_leaf: Optional[ChangePropagationLeaf] = None
 
     def propagate_back(self, end_leaf: ChangePropagationLeaf):
         current_leaf = end_leaf
@@ -119,10 +117,8 @@ class ChangePropagationTree:
 
             current_leaf = current_leaf.parent
 
-    def propagate(self, search_depth: int = 4) -> float:
+    def propagate(self, search_depth: int = 4) -> 'ChangePropagationTree':
         network = self.dsm_likelihood.node_network
-
-        print(f"Searching for paths from {network[self.start_index].name} to {network[self.target_index].name}")
 
         self.start_leaf = ChangePropagationLeaf(network[self.start_index], self.dsm_impact.node_network[self.start_index])
         search_stack = [self.start_leaf]
@@ -132,10 +128,7 @@ class ChangePropagationTree:
         while len(search_stack) > 0:
             current_leaf = search_stack.pop(0)
 
-            print(f'Visiting {current_leaf.node.name}, which has {len(current_leaf.node.neighbours)} neighbors.')
-
             if current_leaf.node.index == self.target_index:
-                print("Found target")
                 end_leafs.append(current_leaf)
 
                 # Propagate back and register path
@@ -161,13 +154,12 @@ class ChangePropagationTree:
                 if cpf.node.index not in visited_nodes and cpf.level <= search_depth:
                     search_stack.append(cpf)
 
-        print(f"Found {len(end_leafs)} solutions")
+        return self
 
-        return self.construct_paths()
-
-    def construct_paths(self):
+    def get_risk(self) -> float:
         risk = self.start_leaf.get_risk()
-        prob = self.start_leaf.get_probability()
-        print(f'probability: {prob}\t\trisk: {risk}')
         return risk
 
+    def get_probability(self) -> float:
+        prob = self.start_leaf.get_probability()
+        return prob
