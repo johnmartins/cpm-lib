@@ -3,11 +3,12 @@ from cpm.models import *
 
 
 dsm = parse.parse_csv('./test-assets/test-trinity-dsm-5.csv')
+dsm_impact = parse.parse_csv('./test-assets/test-trinity-dsm-impact-5.csv')
 
-cpt = ChangePropagationTree(0, 2, dsm, dsm)
+cpt = ChangePropagationTree(2, 0, dsm_impact, dsm)
 risk = cpt.propagate(search_depth=50)
 
-print(f'calculated risk: {risk}')
+# print(f'calculated risk: {risk}')
 
 """
 Correct example with 0.5 impacts and probs
@@ -34,10 +35,10 @@ print(f'Impact = {(1 - (1 - I) * (1 - I))}')
 """
 
 """
-correct example with varying impacts
+# correct example with varying impacts
 Le = 0.5
-Ibc = 0.4
-Iec = 0.7
+Ibc = 0.5
+Iec = 0.5
 
 L = Le*(1-(1-Le*Le)*(1-Le))
 print(L)
@@ -46,7 +47,7 @@ print(f'Likelihood = {(1 - (1 - L) * (1 - L))}')
 Re = Le*(1-(1-Le*Le*Ibc)*(1-Le*Iec))
 Rb = Le*(1-(1-Le*Le*Iec)*(1-Le*Ibc))
 print(f'Risk = {(1 - (1 - Re) * (1 - Rb))}')
+
+
 """
-
-
 
