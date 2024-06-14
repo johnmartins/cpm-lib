@@ -1,4 +1,3 @@
-import numpy as np
 from cpm.exceptions import *
 from cpm.models import DSM
 
@@ -20,13 +19,23 @@ def parse_csv(filepath, delimiter='auto', encoding='utf8'):
     # We do not want the first column in the header
     column_names.pop(0)
 
-    data = np.genfromtxt(filepath,
-                         delimiter=delimiter,
-                         encoding=encoding,
-                         dtype=None,
-                         autostrip=True,
-                         skip_header=True,
-                         usecols=range(1, num_cols))    # from 1, so header row is skipped
+    data = []
+
+    with open(filepath, 'r') as file:
+        for i, line in enumerate(file):
+            if i == 0:
+                continue
+            data.append([])
+            for j, col in enumerate(line.split(delimiter)):
+                if j == 0:
+                    continue
+                if col == "":
+                    data[i-1].append(None)
+                else:
+                    try:
+                        data[i-1].append(float(col))
+                    except ValueError:
+                        data[i - 1].append(None)
 
     dsm = DSM(matrix=data, columns=column_names)
 
