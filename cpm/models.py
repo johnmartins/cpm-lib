@@ -81,6 +81,12 @@ class ChangePropagationLeaf:
     def get_risk(self):
 
         if len(self.next) == 0:
+
+            if self.parent is None:
+                # These nodes are not connected.
+                return 0
+
+            # Final connection is the only one where we care about impact.
             return self.impact_node.neighbours[self.parent.node.index]
 
         prob = 1
