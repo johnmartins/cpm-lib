@@ -49,7 +49,6 @@ def detect_delimiter(text, look_ahead=1000):
 
         # Don't waste time going through the entire file if it is large
         if look_ahead <= index:
-            print(f'Break at index {index}')
             break
 
     best_matches = 0
