@@ -55,7 +55,8 @@ class ChangePropagationLeaf:
         self.node: GraphNode = node
         self.parent: Optional['ChangePropagationLeaf'] = parent
         self.level: int = self.set_level()
-        self.next = []
+        self.next: dict[int, 'ChangePropagationLeaf'] = {}  # index -> leaf
+        self.probability = None
 
     def set_level(self):
         level = 0
@@ -66,6 +67,22 @@ class ChangePropagationLeaf:
             node = node.parent
 
         return level
+
+    def get_probability(self):
+
+        if len(self.next) == 0:
+            return 1
+
+        prob = 1
+
+        for next_index in self.next:
+            # Likelihood of propagating to this node
+            to_this = self.next[next_index].node.neighbours[self.node.index]
+            # Likelihood of that node being propagated to:
+            to_next = self.next[next_index].get_probability()
+            prob = prob * (1 - to_this * to_next)
+
+        return 1 - prob
 
 
 class ChangePropagationPath:
@@ -108,14 +125,14 @@ class ChangePropagationTree:
         self.dsm_likelihood: DSM = dsm_likelihood
         self.start_index: int = start_index
         self.target_index: int = target_index
-        self.start_leaf = None
+        self.start_leaf: ChangePropagationLeaf = None
 
     def propagate_back(self, end_leaf: ChangePropagationLeaf):
         current_leaf = end_leaf
 
         while current_leaf:
             if current_leaf.parent:
-                current_leaf.parent.next.append(current_leaf)
+                current_leaf.parent.next[current_leaf.node.index] = current_leaf
 
             current_leaf = current_leaf.parent
 
@@ -161,44 +178,13 @@ class ChangePropagationTree:
                 if cpf.node.index not in visited_nodes and cpf.level <= search_depth:
                     search_stack.append(cpf)
 
-        print(f"Found {len(self.start_leaf.next)} solutions")
-        print(self.start_leaf.next)
+        print(f"Found {len(end_leafs)} solutions")
 
-        paths = self.construct_paths(end_leafs)
+        return self.construct_paths()
 
-        return self.calculate_risk(paths)
+    def construct_paths(self):
 
-    def construct_paths(self, end_leafs: list[ChangePropagationLeaf]) -> list[ChangePropagationPath]:
-        risk_array = []
-        paths_array = []
-
-        for index, end_leaf in enumerate(end_leafs):
-            leaf = end_leaf
-
-            path_str_array = []
-            current_path = ChangePropagationPath(self.dsm_impact)
-
-            while leaf:
-                path_str_array.append(f"[{index}] {leaf.node.name}")
-
-                current_path.set_next(leaf)
-
-                if not leaf.parent:
-                    break
-
-                leaf = leaf.parent
-
-            risk = 1 - current_path.impact * current_path.probability
-            risk_array.append(risk)
-            paths_array.append(current_path)
-
-            print(current_path)
-
-        multiplied_risk = 1
-        for risk in risk_array:
-            multiplied_risk *= risk
-
-        return paths_array
+        return self.start_leaf.get_probability()
 
     def calculate_risk(self, paths: list[ChangePropagationPath], algorithm: str = 'cambridge') -> float:
 
@@ -240,12 +226,14 @@ class ChangePropagationTree:
         return 1 - risk
 
 
+class OrGate:
+    def __init__(self, options: list[ChangePropagationLeaf] = []):
+        self.options: list[ChangePropagationLeaf] = options
 
 
-
-
-
-
+class AndGate:
+    def __init__(self, chain: list[ChangePropagationLeaf] = []):
+        self.chain: list[ChangePropagationLeaf] = chain
 
 
 

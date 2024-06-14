@@ -7,7 +7,7 @@ dsm = parse.parse_csv('./test-assets/test-trinity-dsm-5.csv')
 cpt = ChangePropagationTree(0, 2, dsm, dsm)
 risk = cpt.propagate(search_depth=50)
 
-print(risk)
+print(f'calculated risk: {risk}')
 
 """
 Correct example with 0.5 impacts and probs
