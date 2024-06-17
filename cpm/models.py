@@ -25,7 +25,7 @@ class DSM:
                 if not col:
                     continue
                 # Add interaction to node network
-                network_dict[i].add_neighbour(network_dict[j], float(col))  # Assumes cell only contains a float.
+                network_dict[j].add_neighbour(network_dict[i], float(col))  # Assumes cell only contains a float.
 
         return network_dict
 
@@ -71,10 +71,10 @@ class ChangePropagationLeaf:
 
         for next_index in self.next:
             # Likelihood of propagating to this node
-            to_this = self.next[next_index].node.neighbours[self.node.index]
+            from_this = self.node.neighbours[next_index]
             # Likelihood of that node being propagated to:
             to_next = self.next[next_index].get_probability()
-            prob = prob * (1 - to_this * to_next)
+            prob = prob * (1 - from_this * to_next)
 
         return 1 - prob
 
@@ -87,18 +87,18 @@ class ChangePropagationLeaf:
                 return 0
 
             # Final connection is the only one where we care about impact.
-            return self.impact_node.neighbours[self.parent.node.index]
+            return self.parent.impact_node.neighbours[self.node.index]
 
         prob = 1
 
         for next_index in self.next:
-            # Likelihood of propagating to this node
-            to_this = self.next[next_index].node.neighbours[self.node.index]
-            # Likelihood of that node being propagated to:
-            to_next = self.next[next_index].get_risk()
+            # Likelihood of propagating to the next node
+            from_this = self.node.neighbours[next_index]
+            # Likelihood of that node propagating
+            from_next = self.next[next_index].get_risk()
             # Impact of propagating to this node from next
 
-            prob = prob * (1 - to_this * to_next)
+            prob = prob * (1 - from_this * from_next)
 
         return 1 - prob
 
