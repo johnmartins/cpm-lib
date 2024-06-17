@@ -3,8 +3,8 @@ from cpm.parse import parse_csv
 from cpm.models import ChangePropagationTree
 
 
-dsm_i = parse_csv('./test-assets/test-trinity-dsm-impact-5.csv')
-dsm_l = parse_csv('./test-assets/test-trinity-dsm-likelihood-5.csv')
+dsm_i = parse_csv('./test-assets/final-test-asym-Is.csv')
+dsm_l = parse_csv('./test-assets/final-test-asym-Ls.csv')
 
 # Run change propagation on entire matrix
 res_mtx: list[list[Union[float, str]]] = []
