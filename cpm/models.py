@@ -8,20 +8,22 @@ class DSM:
     one DSM for the likelihood of propagation, and one DSM for the impact of propagation.
     """
 
-    def __init__(self, matrix: list[list[Optional[float]]], columns: list[str]):
+    def __init__(self, matrix: list[list[Optional[float]]], columns: list[str], instigator='column'):
         """
         Construct a DSM using a matrix and column-header
         :param matrix: List matrix containing floats or empty cells
         :param columns: Matrix header
+        :param instigator: Can either be **column** or **row**. Determines directionality of interactions in DSM.
+        By default, propagation travels from column to row
         """
         self.matrix = matrix
         self.columns = columns
-        self.node_network: dict[int, 'GraphNode'] = self.build_node_network()
+        self.node_network: dict[int, 'GraphNode'] = self.build_node_network(instigator)
 
     def __str__(self):
         return f'{self.columns}\n{self.matrix}'
 
-    def build_node_network(self) -> dict[int, 'GraphNode']:
+    def build_node_network(self, instigator: str) -> dict[int, 'GraphNode']:
         """
         Construct a node network using the DSM.
         This enables path finding to be run on the system.\n
@@ -41,7 +43,12 @@ class DSM:
                 if not col:
                     continue
                 # Add interaction to node network
-                network_dict[j].add_neighbour(network_dict[i], float(col))  # Assumes cell only contains a float.
+                if instigator == 'column':
+                    network_dict[j].add_neighbour(network_dict[i], float(col))  # Assumes cell only contains a float.
+                elif instigator == 'row':
+                    network_dict[i].add_neighbour(network_dict[j], float(col))
+                else:
+                    raise TypeError('Instigator needs to either be "column" or "row".')
 
         return network_dict
 

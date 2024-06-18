@@ -41,3 +41,20 @@ def test_parse_dsm_network():
     assert len(b_neighbours) == 1
     assert b_neighbours[0] == 3
 
+
+def test_parse_dsm_network_instigator_row():
+    dsm = parse_csv('./tests/test-assets/dsm-network-test.csv', instigator='row')
+    assert dsm.node_network[3].name == 'D'
+    d_neighbours = list(dsm.node_network[3].neighbours.keys())
+    assert len(d_neighbours) == 1   # Should only have one connection
+    assert d_neighbours[0] == 1     # Has neighbour with B
+    b_neighbours = list(dsm.node_network[1].neighbours.keys())
+    assert len(b_neighbours) == 1   # Should only have one
+    assert b_neighbours[0] == 2     # B should be neighbour with C
+    c_neighbours = list(dsm.node_network[2].neighbours.keys())
+    assert len(c_neighbours) == 1
+    assert c_neighbours[0] == 0
+    a_neighbours = list(dsm.node_network[0].neighbours.keys())
+    assert len(a_neighbours) == 1
+    assert a_neighbours[0] == 3
+

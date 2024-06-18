@@ -2,10 +2,18 @@ from cpm.exceptions import *
 from cpm.models import DSM
 
 
-def parse_csv(filepath, delimiter='auto', encoding='utf8'):
+def parse_csv(filepath: str, delimiter: str = 'auto', encoding: str = 'utf-8', instigator: str = 'column'):
+    """
+    Parse CSV to DSM
+    :param filepath: Targeted CSV file
+    :param delimiter: CSV delimiter. Defaults to auto-detection.
+    :param encoding: text-encoding. Defaults to utf-8
+    :param instigator: Determines directionality of DSM. Defaults to columns instigating rows.
+    :return: DSM
+    """
 
     if delimiter == 'auto':
-        with open(filepath, 'r') as file:
+        with open(filepath, 'r', encoding=encoding) as file:
             delimiter = detect_delimiter(file.read())
 
     # Identify number of rows, and separate header row
@@ -37,12 +45,18 @@ def parse_csv(filepath, delimiter='auto', encoding='utf8'):
                     except ValueError:
                         data[i - 1].append(None)
 
-    dsm = DSM(matrix=data, columns=column_names)
+    dsm = DSM(matrix=data, columns=column_names, instigator=instigator)
 
     return dsm
 
 
 def detect_delimiter(text, look_ahead=1000):
+    """
+    Attempts to determine CSV delmiter based on a certain amount of sample characters
+    :param text: text from CSV file
+    :param look_ahead: number of samples from CSV-file used to guess the delimiter
+    :return:
+    """
     symbol_map = dict({
         ",": 0,
         ";": 0,
