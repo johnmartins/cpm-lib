@@ -1,6 +1,6 @@
-# Change Propagation Library
+# Change Prediction Library
 This library is intended to assist in the calculation of 
-change propagation (Clarkson et al., 2004) in a system.
+change prediction/propagation (Clarkson et al., 2004) in a system.
 The library takes to DSMs as an input: one for likelihoods and 
 one for impacts. These DSMs should be in a CSV format.
 Once the DSMs are loaded, a `ChangePropagationTree` can be
@@ -104,6 +104,20 @@ between C and B is bi-directional, while change can also propagate from D to C.
 | **C** |       | 0.5   | C     | 0.5   |
 | **D** |       |       |       | D     |
 
+## Changing DSM directionality
+If it is desirable to instead have instigation occur from rows to columns,
+then it is possible to instantiate the DSMs with this as a keyword attribute:
+```
+dsm = DSM(matrix=data, columns=column_names, instigator="row")
+```
+The default is `instigator='column`.
+This can also be utilized when parsing a CSV-file, like this:
+
+```
+dsm = parse_csv(filepath, instigator='row')
+```
+
+Note that changing instigator will completely change the results of propagation.
 
 ## References
 Clarkson, P. J., Caroline, S., & Claudia, E. (2004). Predicting Change Propagation in Complex Design. Journal of Mechanical Design, 126(5), 788–797. https://doi.org/10.1115/1.1765117
