@@ -1,7 +1,6 @@
 .idea
 *.pyc
 venv/
-*.csv
 dist/
 build/
 *.egg-info

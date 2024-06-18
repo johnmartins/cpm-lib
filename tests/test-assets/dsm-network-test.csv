@@ -1,0 +1,5 @@
+Lowest level means;A;B;C;D
+A;A;;;0.5
+B;;B;0.5;
+C;0.5;;C;
+D;;0.5;;D

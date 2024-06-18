@@ -1,9 +1,19 @@
-from typing import Any, Optional
+from typing import Optional
 
 
 class DSM:
+    """
+    Design Structure Matrix Class contains possible interactions between sub-systems.
+    Typically, when performing Change Propagation analysis, there are two DSMs:
+    one DSM for the likelihood of propagation, and one DSM for the impact of propagation.
+    """
 
-    def __init__(self, matrix: Any, columns: list[str]):
+    def __init__(self, matrix: list[list[Optional[float]]], columns: list[str]):
+        """
+        Construct a DSM using a matrix and column-header
+        :param matrix: List matrix containing floats or empty cells
+        :param columns: Matrix header
+        """
         self.matrix = matrix
         self.columns = columns
         self.node_network: dict[int, 'GraphNode'] = self.build_node_network()
@@ -12,6 +22,12 @@ class DSM:
         return f'{self.columns}\n{self.matrix}'
 
     def build_node_network(self) -> dict[int, 'GraphNode']:
+        """
+        Construct a node network using the DSM.
+        This enables path finding to be run on the system.\n
+        **This is done on DSM class instantiation and should probably not be done manually**
+        :return:
+        """
         network_dict = {}
         for index, col in enumerate(self.columns):
             network_dict[index] = GraphNode(index, col)
@@ -108,6 +124,13 @@ class ChangePropagationTree:
     Used to calculate how the start node affects the end node
     """
     def __init__(self, start_index: int, target_index: int, dsm_impact: DSM, dsm_likelihood: DSM):
+        """
+        Calculate the risk and probability of a change propagating from one sub-system to another.
+        :param start_index: Column index for start of propagation
+        :param target_index: Column index for propagation target
+        :param dsm_impact: Impact DSM
+        :param dsm_likelihood: Likelihood DSM
+        """
         self.dsm_impact: DSM = dsm_impact
         self.dsm_likelihood: DSM = dsm_likelihood
         self.start_index: int = start_index
@@ -124,6 +147,12 @@ class ChangePropagationTree:
             current_leaf = current_leaf.parent
 
     def propagate(self, search_depth: int = 4) -> 'ChangePropagationTree':
+        """
+        Propagate change. This will determine the paths of possible propagation within the system.
+        Use `get_risk()` and `get_probability()` to extract the corresponding values.
+        :param search_depth:
+        :return:
+        """
         network = self.dsm_likelihood.node_network
 
         self.start_leaf = ChangePropagationLeaf(network[self.start_index], self.dsm_impact.node_network[self.start_index])
@@ -163,9 +192,17 @@ class ChangePropagationTree:
         return self
 
     def get_risk(self) -> float:
+        """
+        Get risk of propagation
+        :return:
+        """
         risk = self.start_leaf.get_risk()
         return risk
 
     def get_probability(self) -> float:
+        """
+        Get probability/likelihood of propagation
+        :return:
+        """
         prob = self.start_leaf.get_probability()
         return prob
