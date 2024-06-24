@@ -2,48 +2,73 @@ from cpm.exceptions import *
 from cpm.models import DSM
 
 
-def parse_csv(filepath: str, delimiter: str = 'auto', encoding: str = 'utf-8', instigator: str = 'column'):
+def parse_csv(file, delimiter: str = 'auto', encoding: str = 'utf-8', instigator: str = 'column'):
     """
     Parse CSV to DSM
-    :param filepath: Targeted CSV file
+    :param file: Targeted CSV file or file-like object
     :param delimiter: CSV delimiter. Defaults to auto-detection.
     :param encoding: text-encoding. Defaults to utf-8
     :param instigator: Determines directionality of DSM. Defaults to columns instigating rows.
     :return: DSM
     """
 
+    def read_file(file):
+        if isinstance(file, str):
+            with open(file, 'r', encoding=encoding) as f:
+                return f.read()
+        elif hasattr(file, 'read'):
+            position = file.tell()
+            content = file.read()
+            file.seek(position)
+            return content
+        else:
+            raise ValueError("Invalid file input. Must be a filepath or a file-like object.")
+    
+    def get_file_lines(file):
+        if isinstance(file, str):
+            with open(file, 'r', encoding=encoding) as f:
+                return f.readlines()
+        elif hasattr(file, 'read'):
+            position = file.tell()
+            file.seek(0)
+            lines = file.readlines()
+            file.seek(position)
+            return lines
+        else:
+            raise ValueError("Invalid file input. Must be a filepath or a file-like object.")
+    
+    content = read_file(file)
+    
     if delimiter == 'auto':
-        with open(filepath, 'r', encoding=encoding) as file:
-            delimiter = detect_delimiter(file.read())
+        delimiter = detect_delimiter(content)
 
     # Identify number of rows, and separate header row
     num_cols = 0
     column_names = []
-    with open(filepath, 'r') as file:
-        for line in file:
-            column_names.append(line.split(delimiter)[0])
-            num_cols += 1
+    lines = get_file_lines(file)
+    for line in lines:
+        column_names.append(line.split(delimiter)[0])
+        num_cols += 1
 
     # We do not want the first column in the header
     column_names.pop(0)
 
     data = []
 
-    with open(filepath, 'r') as file:
-        for i, line in enumerate(file):
-            if i == 0:
+    for i, line in enumerate(lines):
+        if i == 0:
+            continue
+        data.append([])
+        for j, col in enumerate(line.split(delimiter)):
+            if j == 0:
                 continue
-            data.append([])
-            for j, col in enumerate(line.split(delimiter)):
-                if j == 0:
-                    continue
-                if col == "":
+            if col == "":
+                data[i-1].append(None)
+            else:
+                try:
+                    data[i-1].append(float(col))
+                except ValueError:
                     data[i-1].append(None)
-                else:
-                    try:
-                        data[i-1].append(float(col))
-                    except ValueError:
-                        data[i - 1].append(None)
 
     dsm = DSM(matrix=data, columns=column_names, instigator=instigator)
 
