@@ -5,12 +5,12 @@ from os import listdir
 import re
 
 
-def parse_csv_dir(dir_path: str, pattern: str =  None,  delimiter: str = 'auto',
+def parse_csv_dir(dir_path: str, pattern: str = None,  delimiter: str = 'auto',
                   encoding: str = 'utf-8', instigator: str = 'column') -> list[DSM]:
     """
     Parse a directory of CSVs. A pattern for what the filename needs to include can be used
     as an inclusivity-filter.
-    :param path:
+    :param dir_path:
     :param pattern:
     :param delimiter:
     :param encoding:
@@ -26,8 +26,7 @@ def parse_csv_dir(dir_path: str, pattern: str =  None,  delimiter: str = 'auto',
         if p and p.match(filename) is None:
             continue
         filepath = dir_path + '/' + filename
-        print(filepath)
-        dsm_array.append(parse_csv(filepath))
+        dsm_array.append(parse_csv(filepath, delimiter=delimiter, encoding=encoding, instigator=instigator))
 
     return dsm_array
 
