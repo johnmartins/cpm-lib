@@ -1,4 +1,3 @@
-import pytest
 from cpm.parse import parse_csv
 
 
@@ -58,3 +57,11 @@ def test_parse_dsm_network_instigator_row():
     assert len(a_neighbours) == 1
     assert a_neighbours[0] == 3
 
+
+def test_parse_file_object():
+    path = './tests/test-assets/dsm-network-test.csv'
+    with open(path) as file:
+        dsm = parse_csv(file)
+
+        for col in ['A', 'B', 'C', 'D']:
+            assert col in dsm.columns
