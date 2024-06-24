@@ -1,8 +1,9 @@
+from typing import TextIO, Union
 from cpm.exceptions import *
 from cpm.models import DSM
 
 
-def parse_csv(file, delimiter: str = 'auto', encoding: str = 'utf-8', instigator: str = 'column'):
+def parse_csv(file: Union[str, TextIO], delimiter: str = 'auto', encoding: str = 'utf-8', instigator: str = 'column'):
     """
     Parse CSV to DSM
     :param file: Targeted CSV file or file-like object
@@ -11,33 +12,8 @@ def parse_csv(file, delimiter: str = 'auto', encoding: str = 'utf-8', instigator
     :param instigator: Determines directionality of DSM. Defaults to columns instigating rows.
     :return: DSM
     """
-
-    def read_file(file):
-        if isinstance(file, str):
-            with open(file, 'r', encoding=encoding) as f:
-                return f.read()
-        elif hasattr(file, 'read'):
-            position = file.tell()
-            content = file.read()
-            file.seek(position)
-            return content
-        else:
-            raise ValueError("Invalid file input. Must be a filepath or a file-like object.")
     
-    def get_file_lines(file):
-        if isinstance(file, str):
-            with open(file, 'r', encoding=encoding) as f:
-                return f.readlines()
-        elif hasattr(file, 'read'):
-            position = file.tell()
-            file.seek(0)
-            lines = file.readlines()
-            file.seek(position)
-            return lines
-        else:
-            raise ValueError("Invalid file input. Must be a filepath or a file-like object.")
-    
-    content = read_file(file)
+    content = _read_file(file, encoding)
     
     if delimiter == 'auto':
         delimiter = detect_delimiter(content)
@@ -45,7 +21,7 @@ def parse_csv(file, delimiter: str = 'auto', encoding: str = 'utf-8', instigator
     # Identify number of rows, and separate header row
     num_cols = 0
     column_names = []
-    lines = get_file_lines(file)
+    lines = _get_file_lines(file, encoding)
     for line in lines:
         column_names.append(line.split(delimiter)[0])
         num_cols += 1
@@ -73,6 +49,33 @@ def parse_csv(file, delimiter: str = 'auto', encoding: str = 'utf-8', instigator
     dsm = DSM(matrix=data, columns=column_names, instigator=instigator)
 
     return dsm
+
+
+def _read_file(file, encoding):
+    if isinstance(file, str):
+        with open(file, 'r', encoding=encoding) as f:
+            return f.read()
+    elif hasattr(file, 'read'):
+        position = file.tell()
+        content = file.read()
+        file.seek(position)
+        return content
+    else:
+        raise ValueError("Invalid file input. Must be a filepath or a file-like object.")
+
+
+def _get_file_lines(file, encoding):
+    if isinstance(file, str):
+        with open(file, 'r', encoding=encoding) as f:
+            return f.readlines()
+    elif hasattr(file, 'read'):
+        position = file.tell()
+        file.seek(0)
+        lines = file.readlines()
+        file.seek(position)
+        return lines
+    else:
+        raise ValueError("Invalid file input. Must be a filepath or a file-like object.")
 
 
 def detect_delimiter(text, look_ahead=1000):
@@ -110,4 +113,3 @@ def detect_delimiter(text, look_ahead=1000):
         raise AutoDelimiterError('None of the default delimiters matched the file. Is the file empty?')
 
     return best_delimiter
-
