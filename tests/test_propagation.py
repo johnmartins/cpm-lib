@@ -10,9 +10,9 @@ def test_risk_calculation():
     depth = 4
     res_mtx: list[list[float]] = []
 
-    for i, col in enumerate(dsm_p.columns):
+    for i, _ in enumerate(dsm_p.columns):
         res_mtx.append([])
-        for j, col in enumerate(dsm_p.columns):
+        for j, _ in enumerate(dsm_p.columns):
             cpt = ChangePropagationTree(start_index=j, target_index=i, dsm_impact=dsm_i, dsm_likelihood=dsm_p)
             cpt.propagate(search_depth=depth)
             r = cpt.get_risk()
@@ -20,8 +20,8 @@ def test_risk_calculation():
 
     dsm_r = parse_csv('./tests/test-assets/dsm-cpx-answers-risks.csv')
 
-    for i, col in enumerate(dsm_r.columns):
-        for j, col in enumerate(dsm_r.columns):
+    for i, _ in enumerate(dsm_r.columns):
+        for j, _ in enumerate(dsm_r.columns):
             if dsm_r.matrix[i][j] is None:
                 continue
             assert abs(res_mtx[i][j] - dsm_r.matrix[i][j]) < 0.001

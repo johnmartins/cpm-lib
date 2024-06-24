@@ -1,5 +1,34 @@
 from cpm.exceptions import *
 from cpm.models import DSM
+from os import listdir
+import re
+
+
+def parse_csv_dir(dir_path: str, pattern: str =  None,  delimiter: str = 'auto',
+                  encoding: str = 'utf-8', instigator: str = 'column') -> list[DSM]:
+    """
+    Parse a directory of CSVs. A pattern for what the filename needs to include can be used
+    as an inclusivity-filter.
+    :param path:
+    :param pattern:
+    :param delimiter:
+    :param encoding:
+    :param instigator:
+    :return:
+    """
+    dsm_array = []
+    p = None
+    if pattern is not None:
+        p = re.compile(pattern, re.DOTALL)
+
+    for filename in listdir(dir_path):
+        if p and p.match(filename) is None:
+            continue
+        filepath = dir_path + '/' + filename
+        print(filepath)
+        dsm_array.append(parse_csv(filepath))
+
+    return dsm_array
 
 
 def parse_csv(filepath: str, delimiter: str = 'auto', encoding: str = 'utf-8', instigator: str = 'column'):
