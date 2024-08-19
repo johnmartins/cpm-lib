@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/808499164.svg)](https://zenodo.org/doi/10.5281/zenodo.13340868)
+
 # Change Prediction Library
 This library is intended to assist in the calculation of 
 change prediction/propagation (Clarkson et al., 2004) in a system.
