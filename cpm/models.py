@@ -40,13 +40,21 @@ class DSM:
                 if i == j:
                     continue
                 # Ignore empty cells
-                if not col:
+                if col == "" or col is None:
                     continue
+
+                numerical_value = 0.0
+
+                try:
+                    numerical_value = float(col)
+                except ValueError:
+                    raise ValueError('Unexpected DSM cell value. Could not be parsed as a float. Control DSM input.')
+
                 # Add interaction to node network
                 if instigator == 'column':
-                    network_dict[j].add_neighbour(network_dict[i], float(col))  # Assumes cell only contains a float.
+                    network_dict[j].add_neighbour(network_dict[i], numerical_value)  # Assumes cell only contains a float.
                 elif instigator == 'row':
-                    network_dict[i].add_neighbour(network_dict[j], float(col))
+                    network_dict[i].add_neighbour(network_dict[j], numerical_value)
                 else:
                     raise TypeError('Instigator needs to either be "column" or "row".')
 
@@ -109,7 +117,11 @@ class ChangePropagationLeaf:
                 # These nodes are not connected.
                 return 0
 
-            # Final connection is the only one where we care about impact.
+            # If the impact is null, then return 0.
+            if self.node.index not in self.parent.impact_node.neighbours:
+                raise ValueError('Unexpected empty DSM cell. The final impact cell was null. Check if DSMs are valid.')
+
+            # Final connection is the only one where we care about impact
             return self.parent.impact_node.neighbours[self.node.index]
 
         prob = 1
