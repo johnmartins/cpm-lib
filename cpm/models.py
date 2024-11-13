@@ -176,7 +176,6 @@ class ChangePropagationTree:
 
         self.start_leaf = ChangePropagationLeaf(network[self.start_index], self.dsm_impact.node_network[self.start_index])
         search_stack = [self.start_leaf]
-        visited_nodes = set()
         end_leafs: list[ChangePropagationLeaf] = []
 
         while len(search_stack) > 0:
@@ -205,7 +204,7 @@ class ChangePropagationTree:
 
                 cpf = ChangePropagationLeaf(network[neighbour], self.dsm_impact.node_network[neighbour], current_leaf)
 
-                if cpf.node.index not in visited_nodes and cpf.level <= search_depth:
+                if cpf.level <= search_depth:
                     search_stack.append(cpf)
 
         return self
