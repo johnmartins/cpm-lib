@@ -29,7 +29,7 @@ dsm_likelihood = parse.parse_csv('./dsm-likelihoods.csv')
 dsm_impact = parse.parse_csv('./dsm-impacts.csv')
 
 # Calculate the risk of change propagating 
-# from sub-system 0, to sub-system 3
+# from sub-system 3, to sub-system 0
 start_index = 3
 target_index = 0
 cpt = ChangePropagationTree(start_index, target_index, dsm_impact, dsm_likelihood)
