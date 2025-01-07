@@ -3,8 +3,8 @@ from cpm.parse import parse_csv
 from cpm.models import ChangePropagationTree
 
 
-dsm_i = parse_csv('./test-assets/final-test-asym-Is.csv')
-dsm_l = parse_csv('./test-assets/final-test-asym-Ls.csv')
+dsm_i = parse_csv('./tests/test-assets/dsm-bm-8-imps.csv')
+dsm_l = parse_csv('./tests/test-assets/dsm-bm-8-probs.csv')
 
 # Run change propagation on entire matrix
 res_mtx: list[list[Union[float, str]]] = []
@@ -13,7 +13,7 @@ for i, icol in enumerate(dsm_l.columns):
 
     for j, jcol in enumerate(dsm_l.columns):
         cpt = ChangePropagationTree(j, i, dsm_impact=dsm_i, dsm_likelihood=dsm_l)
-        cpt.propagate(search_depth=5)
+        cpt.propagate(search_depth=4)
         res_mtx[i].append(cpt.get_risk())
 
 # Write CSV file
