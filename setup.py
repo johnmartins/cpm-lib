@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-VERSION = '1.0.9'
+VERSION = '1.1.0'
 DESCRIPTION = 'Tool for calculating risk of change propagation in a system.'
 
 with open("README.md", "r") as fh:

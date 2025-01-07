@@ -19,6 +19,10 @@ class DSM:
         self.matrix = matrix
         self.columns = columns
         self.node_network: dict[int, 'GraphNode'] = self.build_node_network(instigator)
+        self.instigator = instigator
+
+        if instigator not in ['row', 'column']:
+            raise ValueError('instigator argument needs to be either "row" or "column".')
 
     def __str__(self):
         return f'{self.columns}\n{self.matrix}'
@@ -30,6 +34,10 @@ class DSM:
         **This is done on DSM class instantiation and should probably not be done manually**
         :return:
         """
+        if instigator == 'row':
+            # Transpose. Calculation is always performed as if columns are the instigators.
+            self.matrix = list(zip(*self.matrix))
+
         network_dict = {}
         for index, col in enumerate(self.columns):
             network_dict[index] = GraphNode(index, col)
@@ -51,12 +59,7 @@ class DSM:
                     raise ValueError('Unexpected DSM cell value. Could not be parsed as a float. Control DSM input.')
 
                 # Add interaction to node network
-                if instigator == 'column':
-                    network_dict[j].add_neighbour(network_dict[i], numerical_value)  # Assumes cell only contains a float.
-                elif instigator == 'row':
-                    network_dict[i].add_neighbour(network_dict[j], numerical_value)
-                else:
-                    raise TypeError('Instigator needs to either be "column" or "row".')
+                network_dict[j].add_neighbour(network_dict[i], numerical_value)  # Assumes cell only contains a float.
 
         return network_dict
 
@@ -150,6 +153,14 @@ class ChangePropagationTree:
         :param dsm_impact: Impact DSM
         :param dsm_likelihood: Likelihood DSM
         """
+        if dsm_impact.instigator != dsm_likelihood.instigator:
+            raise ValueError('DSMs have DIFFERENT instigators, but they need to be the same (row or column).')
+
+        if dsm_impact.instigator == 'row':
+            temp = start_index
+            start_index = target_index
+            target_index = temp
+
         self.dsm_impact: DSM = dsm_impact
         self.dsm_likelihood: DSM = dsm_likelihood
         self.start_index: int = start_index
@@ -215,6 +226,7 @@ class ChangePropagationTree:
         :return:
         """
         risk = self.start_leaf.get_risk()
+
         return risk
 
     def get_probability(self) -> float:
