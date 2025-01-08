@@ -25,6 +25,8 @@ class DSM:
         if instigator not in ['row', 'column']:
             raise ValueError('instigator argument needs to be either "row" or "column".')
 
+        self.validate_matrix()
+
     @staticmethod
     def clean_matrix(matrix) -> list[list[float]]:
         cleaned_matrix = []
@@ -41,6 +43,14 @@ class DSM:
                 cleaned_matrix[i].append(cleaned_value)
 
         return cleaned_matrix
+
+    def validate_matrix(self):
+        try:
+            assert len(self.matrix) == len(self.columns)
+            for row in self.matrix:
+                assert len(row) == len(self.columns)
+        except AssertionError:
+            raise ValueError('Matrix dimensions are inconsistent with provided columns.')
 
     def __str__(self):
         return f'{self.columns}\n{self.matrix}'
@@ -183,6 +193,9 @@ class ChangePropagationTree:
             temp = start_index
             start_index = target_index
             target_index = temp
+
+        if len(dsm_impact.matrix) != len(dsm_likelihood.matrix):
+            raise ValueError('Impact and Likelihood matrices need to have the same dimensions.')
 
         self.dsm_impact: DSM = dsm_impact
         self.dsm_likelihood: DSM = dsm_likelihood

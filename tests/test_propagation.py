@@ -122,26 +122,34 @@ def test_probability_calculation():
 def test_dsm_input_robustness():
     instigator = 'column'
     cols = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+    # Purposefully poorly formatted input matrix
     mtx_i = [['-', '0', 0.3, None, None, None, 0.7, 0],
              [None, '-', 0, 0.4, 0.5, None, None, None],
-             ["0.1", 0, '-', '', '', '', 0.8],
-             [0, 0, 0, 'D', 0, 0.7, 0],
+             ["0.1", 0, '-', '', '', '0.6', 0, 0],
+             [0, 0, 0, 'D', 0, 0, None, 0.8],
              [0, 0, 0, 0, None, None, 0.7, 0],
              ['0.1', '0.2', 0, 0, None, 'F', 0.7, 0],
              [0, 0, 0, 0, 0, 0.6, 99, 0],
              [0, 0, 0.3, 0.4, 0, 0, 0, 'H']]
 
     dsm_i = DSM(mtx_i, cols, instigator)
+    # Purposefully poorly formatted input matrix
+    mtx_l = [[None, None, 0.1, None, None, None, 0.1, None],
+             [None, 'B', 0, 0.2, "0.2", 0, 0, None],
+             ["0.3", None, 'C', None, None, 0.3, None, 0],
+             [0, 0, 0, "D", 0, 0, 0, 0.4],
+             [0, 0, 0, 0, "E", 0, 0.5, 0],
+             [0.6, 0.6, None, None, None, "F", "0.6", None],
+             [None, None, None, None, None, 0.7, "G", 0],
+             [0, 0, 0.8, 0.8, 0, 0, 0, "H"]]
 
-    dsm_l = [[],
-             [],
-             [],
-             [],
-             [],
-             [],
-             [],
-             []]
+    dsm_p = DSM(mtx_l, cols, instigator)
 
+    dsm_r = parse_csv('./tests/test-assets/dsm-cpx-answers-risks.csv')
+    res_mtx = calculate_risk_matrix(dsm_i, dsm_p, search_depth=4)
 
-def test_input_throws_if_dsm_instigator_mismatch():
-    pass
+    for i, col_i in enumerate(dsm_r.columns):
+        for j, col_j in enumerate(dsm_r.columns):
+            if i == j:
+                continue
+            assert abs(res_mtx[i][j] - dsm_r.matrix[i][j]) < 0.001, f"Failed for index i={i} (row {col_i}), j={j} (col {col_j})"
