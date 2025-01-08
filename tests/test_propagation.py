@@ -1,4 +1,4 @@
-from cpm.models import ChangePropagationTree
+from cpm.models import ChangePropagationTree, DSM
 from cpm.parse import parse_csv
 from cpm.utils import calculate_risk_matrix
 
@@ -112,8 +112,36 @@ def test_probability_calculation():
 
     dsm_r = parse_csv('./tests/test-assets/dsm-cpx-answers-probs.csv')
 
-    for i, col in enumerate(dsm_r.columns):
-        for j, col in enumerate(dsm_r.columns):
-            if dsm_r.matrix[i][j] is None:
+    for i, col_i in enumerate(dsm_r.columns):
+        for j, col_j in enumerate(dsm_r.columns):
+            if i == j:
                 continue
-            assert abs(res_mtx[i][j] - dsm_r.matrix[i][j]) < 0.001
+            assert abs(res_mtx[i][j] - dsm_r.matrix[i][j]) < 0.001, f"Failed for index i={i} (row {col_i}), j={j} (col {col_j})"
+
+
+def test_dsm_input_robustness():
+    instigator = 'column'
+    cols = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+    mtx_i = [['-', '0', 0.3, None, None, None, 0.7, 0],
+             [None, '-', 0, 0.4, 0.5, None, None, None],
+             ["0.1", 0, '-', '', '', '', 0.8],
+             [0, 0, 0, 'D', 0, 0.7, 0],
+             [0, 0, 0, 0, None, None, 0.7, 0],
+             ['0.1', '0.2', 0, 0, None, 'F', 0.7, 0],
+             [0, 0, 0, 0, 0, 0.6, 99, 0],
+             [0, 0, 0.3, 0.4, 0, 0, 0, 'H']]
+
+    dsm_i = DSM(mtx_i, cols, instigator)
+
+    dsm_l = [[],
+             [],
+             [],
+             [],
+             [],
+             [],
+             [],
+             []]
+
+
+def test_input_throws_if_dsm_instigator_mismatch():
+    pass
