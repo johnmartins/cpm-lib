@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 # python setup.py bdist_wheel sdist
-VERSION = '1.1.0'
+VERSION = '1.1.1'
 DESCRIPTION = 'Tool for calculating risk of change propagation in a system.'
 
 with open("README.md", "r") as fh:
