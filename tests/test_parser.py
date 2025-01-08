@@ -14,10 +14,10 @@ def test_parse_dsm_header():
 def test_parse_dsm_matrix():
     dsm = parse_csv('./tests/test-assets/dsm-simple-symmetrical.csv')
 
-    should_be = [[None, 0.1, 0.2, 0.3],
-                 [0.1, None, 0.4, 0.5],
-                 [0.2, 0.4, None, 0.6],
-                 [0.3, 0.5, 0.6, None]]
+    should_be = [[0, 0.1, 0.2, 0.3],
+                 [0.1, 0, 0.4, 0.5],
+                 [0.2, 0.4, 0, 0.6],
+                 [0.3, 0.5, 0.6, 0]]
 
     for i, row in enumerate(should_be):
         for j, col in enumerate(row):

@@ -1,4 +1,5 @@
 from typing import Optional
+import numbers
 
 
 class DSM:
@@ -16,13 +17,40 @@ class DSM:
         :param instigator: Can either be **column** or **row**. Determines directionality of interactions in DSM.
         By default, propagation travels from column to row
         """
-        self.matrix = matrix
+        self.matrix = DSM.clean_matrix(matrix)
         self.columns = columns
         self.node_network: dict[int, 'GraphNode'] = self.build_node_network(instigator)
         self.instigator = instigator
 
         if instigator not in ['row', 'column']:
             raise ValueError('instigator argument needs to be either "row" or "column".')
+
+        self.validate_matrix()
+
+    @staticmethod
+    def clean_matrix(matrix) -> list[list[float]]:
+        cleaned_matrix = []
+        for i, row in enumerate(matrix):
+            cleaned_matrix.append([])
+            for j, val in enumerate(row):
+                if val is None:
+                    val = 0
+                try:
+                    cleaned_value = float(val)
+                except ValueError:
+                    cleaned_value = 0
+
+                cleaned_matrix[i].append(cleaned_value)
+
+        return cleaned_matrix
+
+    def validate_matrix(self):
+        try:
+            assert len(self.matrix) == len(self.columns)
+            for row in self.matrix:
+                assert len(row) == len(self.columns)
+        except AssertionError:
+            raise ValueError('Matrix dimensions are inconsistent with provided columns.')
 
     def __str__(self):
         return f'{self.columns}\n{self.matrix}'
@@ -47,8 +75,8 @@ class DSM:
                 # Ignore diagonal
                 if i == j:
                     continue
-                # Ignore empty cells
-                if col == "" or col is None:
+                # Ignore empty connections
+                if col == "" or col is None or col == 0:
                     continue
 
                 numerical_value = 0.0
@@ -96,8 +124,13 @@ class ChangePropagationLeaf:
 
         return level
 
-    def get_probability(self):
+    def get_probability(self, stack=0):
 
+        # If this node is the single node in the chain, then the probability is none.
+        if len(self.next) == 0 and stack == 0:
+            return 0
+
+        # If final node in chain, set probability to 1 to complete the calculation
         if len(self.next) == 0:
             return 1
 
@@ -107,7 +140,7 @@ class ChangePropagationLeaf:
             # Likelihood of propagating to this node
             from_this = self.node.neighbours[next_index]
             # Likelihood of that node being propagated to:
-            to_next = self.next[next_index].get_probability()
+            to_next = self.next[next_index].get_probability(stack=stack+1)
             prob = prob * (1 - from_this * to_next)
 
         return 1 - prob
@@ -160,6 +193,9 @@ class ChangePropagationTree:
             temp = start_index
             start_index = target_index
             target_index = temp
+
+        if len(dsm_impact.matrix) != len(dsm_likelihood.matrix):
+            raise ValueError('Impact and Likelihood matrices need to have the same dimensions.')
 
         self.dsm_impact: DSM = dsm_impact
         self.dsm_likelihood: DSM = dsm_likelihood
