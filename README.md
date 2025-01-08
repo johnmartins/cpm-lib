@@ -112,7 +112,7 @@ then it is possible to instantiate the DSMs with this as a keyword attribute:
 ```
 dsm = DSM(matrix=data, columns=column_names, instigator="row")
 ```
-The default is `instigator='column`.
+The default is `instigator='column'`.
 This can also be utilized when parsing a CSV-file, like this:
 
 ```
